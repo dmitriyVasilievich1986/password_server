@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <div>
+        <select id="selectPassword"></select>
+        <input type="text" id="passwordKey" />
+        <button id="sendButton" onclick="sendHandler()">send</button>
+        <p id="receivedPassword"></p>
+    </div>
+</body>
+
+<script>
+    window.onload = start
+    let passwords = []
+    function start() {
+        fetch("/api/passwords/", { headers: { 'Content-Type': 'application/json' } })
+            .then(r => r.json())
+            .then(data => {
+                passwords = data
+                const sel = document.getElementById("selectPassword")
+                let newHTML = ""
+                data.map(d => {
+                    newHTML += `<option value=${d.id}>${d.name}</option>`
+                })
+                sel.innerHTML = newHTML
+            })
+    }
+
+    function sendHandler() {
+        const key = document.getElementById("passwordKey").value
+        const password_id = document.getElementById("selectPassword").value
+
+        data = {
+            method: "POST",
+            headers: { 'Content-Type': 'application/json' },
+            // headers: {'Content-Type': 'text/plain'},
+            body: JSON.stringify({
+                id: password_id,
+                key: key,
+            })
+        }
+        fetch("/api/passwords/get/", data)
+            .then(r => r.text())
+            .then(d => {
+                const received = document.getElementById("receivedPassword")
+                const h = JSON.parse(d)
+                received.innerHTML = Object.keys(h).map(t => `<p>${t}: ${h[t]}</p>`).join("")
+            })
+    }
+</script>
+
+</html>
